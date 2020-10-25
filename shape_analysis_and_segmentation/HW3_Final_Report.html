@@ -1,0 +1,327 @@
+<html>
+<head>
+<title> CS585 HW3 | QI FENG</title>
+<style>
+<!--
+body{
+  font-family: 'Trebuchet MS', Verdana;
+}
+p{
+  font-family: 'Trebuchet MS', Times;
+  margin: 10px 10px 15px 20px;
+}
+h3{
+  margin: 15px;
+}
+h2{
+  margin: 10px;
+}
+h1{
+  margin: 10px 0px 0px 20px;
+}
+div.main-body{
+  align:center;
+  margin: 30px;
+}
+hr{
+  margin:20px 0px 20px 0px;
+}
+-->
+</style>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+
+<body>
+<center>
+  <a href="https://www.bu.edu"><img border="0"
+    src="https://www.cs.bu.edu/fac/betke/images/bu-logo.gif" width="119"
+    height="120"></a>
+</center>
+
+<h1>Object Shape Analysis and Segmentation</h1>
+<p>
+CS 585 Programming Assignment 1 <br>
+Rajat Tripathi<br>
+TEAMMATES: Shubhangi Jain<br>
+</p>
+
+<div class="main-body">
+  <hr>
+  <h2> Binary Image Analysis </h2>
+
+  <h3> Problem Definition </h3>
+  <p>
+  Given a binary image (e.g. hands or tumor images), we try to find connected
+  components and label each object. We try to detect boundary and skeleton of
+  an object. We also calculate object area, orientation, circularity, and
+  compactness for each object.
+  </p>
+
+  <h3> Method and Implementation </h3>
+  <ol>
+    <li>
+    <p>
+    Connected Component Labeling:  Scan every pixel in the image, find a pixel
+    which is not background. After finding the pixel, we label the pixel as 1 at
+    first. Then, we push the pixel in the stack and find neighbors whether they
+    have same intensity value. If so, the neighbor also is pushed into stack and
+    assigned the same label. Pop an item from the stack and keep search for
+    neighbor’s of neighbors. After stack is empty, we increase the label count
+    and find another pixel that needs to be labeled.
+    </p>
+    </li>
+    <li>
+    <p>
+    After connected component labeling, we can get objects in the binary image.
+    Area will be the number of pixels. We simply filter an object which has very
+    small area.
+    </p>
+    </li>
+    <li>
+    <p>
+    We first added a padding of size 1px to the original image in order to be
+    able to progress with the boundary following algorithm discussed in class.
+    We implemented the boundary following algorithm by finding the first black
+    pixel and start following the boundary.
+    </p>
+    </li>
+    <li>
+    <p>
+    After we labeled all the objects from sequential connected component
+    labeling, we passed the set of objects to compute its area by counting the
+    number of pixels, orientation by computing Emin and Emax by the formula
+    given here:
+    </p>
+    <p>
+    $$Emin = \frac{a+c}{2} - \frac{a-c}{2}\left(\frac{a-c}{\sqrt{(a-c)^2 + b^2}}\right) - \frac{b}{2}\left(\frac{b}{\sqrt{(a-c)^2 + b^2}}\right)$$
+    $$Emax = \frac{a+c}{2} + \frac{a-c}{2}\left(\frac{a-c}{\sqrt{(a-c)^2 + b^2}}\right) + \frac{b}{2}\left(\frac{b}{\sqrt{(a-c)^2 + b^2}}\right)$$
+    </p>
+    <p>
+    We then compute the circularity by Emin/Emax. For compactness, we run the
+    boundary following algorithm to get the perimeter for any object. Then the
+    compactness is computed by
+    $$Compactness = \frac{Perimeter^2}{Area}.$$
+    </p>
+    </li>
+    <li>
+    <p>
+    Scan every pixel in the image, find a pixel which is not background. After
+    finding the pixel, we compute the closest distance from any background
+    pixels. Then, we compare this distance with distances from it neighbor’s to
+    background. If it is bigger than that of neighbor’s, we classify it as a
+    skeleton pixels.
+    </p>
+    </li>
+  </ol>
+  <h3> Experiments and Results </h3>
+
+  <p>
+  We tested our implementation on the four sample images.The results are in the table below.
+  </p>
+  <table>
+
+    <tr>
+      <td>Examples</td><td> Source </td><td> Labeling </td><td> Boundary Following </td> <td> Skeleton </td>
+    </tr>
+    <tr>
+      <td> Example 1</td>
+      <td> <img src="images/hand1.png" width="150" height="150"></td>
+      <td> <img src="images/hand1_flood.jpg" width="150" height="150"></td>
+      <td> <img src="images/hand1_boundary.jpg" width="150" height="150"></td>
+      <td> <img src="images/hand1_skeleton.jpg" width="150" height="150"></td>
+
+    </tr>
+    <tr>
+      <td> Example 2</td>
+      <td> <img src="/images/open-bw-full.png" width="150" height="150"> </img></td>
+      <td> <img src="result_open_bw-full_component_labeling.jpg" width="150" height="150"> </img></td>
+      <td> <img src="boundary-open-bw-full-hand.jpg" width="150" height="150"> </img></td>
+      <td> <img src="result_open_bw-full_skeleton.jpg" width="150" height="150"> </img></td>
+    </tr>
+    <tr>
+      <td> Example 3 </td>
+      <td> <img src="/images/hand3.png" width="150" height="150"> </img></td>
+      <td> <img src="/images/Hand3_flood.jpg" width="150" height="150"> </img></td>
+      <td> <img src="/images/hand3_boundary.jpg" width="150" height="150"> </img></td>
+      <td> <img src="/images/hand3_skeleton.jpg" width="150" height="150"> </img></td>
+
+    </tr>
+    <tr>
+      <td> Example 4</td>
+      <td> <img src="tumor-fold.png" width="150" height="150"> </img></td>
+      <td> <img src="result_tumor-fold_component_labeling.png" width="150" height="150"> </img></td>
+      <td> <img src="boundary_tumor.png" width="150" height="150"> </img></td>
+      <td> <img src="result_tumor-fold_skeleton.png" width="150" height="150"> </img></td>
+    </tr>
+  </table>
+  <p>
+  For area, orientation, Emin, Emax and circularity, we will only report the one
+  for the object in the second example, as for other examples, which contain
+  multiple objects, these stats would be too tedious to show.
+  </p>
+
+  <p>
+  Area 37395
+  </p>
+  <p>
+  Orientation -0.277957
+  </p>
+  <p>
+  Circularity 0.457392
+  </p>
+  <p>
+  Compactness 0.0194946
+  </p>
+
+  <h3> Discussion </h3>
+  <p>
+  For preprocessing, we use dilation and erosion to remove noises and filling
+  holes in an object. Our labeling algorithm becomes slow when there are too many
+  objects in the image. So, we filter small objects and erosions.
+  </p>
+
+  <hr>
+  <h2> Segmentation </h2>
+  <h3> Problem Definition </h3>
+  <p>
+  Given frames in a video, we try to detect, segment and track certain object
+  in the frames (e.g. Task 1: hand, task 2: bat, or task 3: people) with
+  methods we learned from classes.
+  </p>
+
+  <h3> Method and Implementation </h3>
+  <ol>
+    <li>
+    <p>
+    For the piano dataset, we first manually defined a mask around
+    the range of keys, which would help reducing the affection from moving
+    parts in the piano. We then compute the mean of all frames, and subtract
+    every frame with this average. This makes it dramatically improved the
+    performance of segmentation, as the color and brightness of the keys on the
+    piano is similar to the color of skin. After this, we convert every frame
+    to grayscale and run a absolute thresholding to separate the hand. We then
+    mark the hand green BGR(0,255,0).
+    </p>
+    <p>
+    We the combine multiple small range to a single larger object, which
+    perfectly matches the hand.  However, there are still some misclassifying
+    object, due to the fact that the keys are similary to skin brightness in
+    the diff image.
+    </p>
+    </li>
+    <li>
+    <p>
+    For the bat dataset, we try several thresholding methods, such as adaptive
+    thresholding, double thresholding, and absolute thresholding. As the
+    background color changes, we first think adaptive thresholding is better
+    than others. Adaptive thresholding gives better performances with
+    an appropriate threshold. After thresholding, we use dilation for
+    connecting points in a bat and erosion for removing small particles and
+    noise. Then, we find connected components with the algorithm in 1-Part1,
+    and filter a component which has a small area. After then, we compute
+    oreintation and compactness using the algorithm in 4-Part 1. If the
+    orientation is bigger than certain threshold, we classify it as unfolded
+    and vice versa. Given connected components, if the distance is below than
+    threshold, we mark the two regions have multiple bats.
+    </p>
+    </li>
+    <li>
+    <p>
+    For the person detection dataset, we first tried out segementation methods
+    including absolute and adaptive threshoulding and both of them are not
+    capable of getting reasonable segmentations. Next up, we compute the
+    difference of each frame with respect to the mean of all frames and tried
+    to apply the same techniques as in the piano dataset. However, this also
+    failed, as the color variance is high from frame to frame and it gets noisy
+    over time and serveral people are wondering arround the center behind the
+    poll. Finally, we used the opencv HOGDescriptor for person detector.
+    </p>
+    </li>
+  </ol>
+
+  <h3> Experiments and Results </h3>
+  <table>
+
+    <tr>
+      <td> Examples </td><td> Source </td><td> Segmented </td>
+    </tr>
+    <tr>
+      <td> Piano </td>
+      <td> <img src="/images/Piano_frame.jpg" width="400" height="280"> </img></td>
+      <td> <img src="piano_result_16.png" width="400" height="280">  </img></td>
+
+    </tr>
+    <tr>
+      <td> Bat </td>
+      <td> <img src="/imges/bat_frame.jpg" width="400" height="400"> </img></td>
+      <td> <img src="/images/bat_bouding.jpg" width="400" height="400"> </img></td>
+    </tr>
+    <tr>
+      <td> Pedestrian </td>
+      <td> <img src="/images/Pedestrian_frame.jpg" width="400" height="280"></td>
+      <td> <img src="/images/Pedestrian_bounding.jpg" width="400" height="280"></td>
+
+    </tr>
+  </table>
+
+  <h3> Discussion </h3>
+  <p>
+  In the piano dataset, the color and brightness of the piano keys are similar
+  to the skin color from the hand.  It became a  challenging task to get the
+  segmentation working for hand detection. We incorporated multiple methods and
+  finally be able to get the hand seperated from the background(piano keys).
+  </p>
+  <p>
+  In the bat dataset, as background changes, it is better to use adpative
+  thresholing. If bat is too small or far from a camera, it is hard to tell if
+  it is unfolded and there are multiple bats in the region.  We set threshold
+  for determining if it is folded emprically with circularity, so that the
+  system does not detect the foldness very well for small obejcts
+  </p>
+  <p>
+  In the pedestrian dataset, we tried out multiple models to find the bounding
+  boxs for people in all the frames. However, the best one found was the
+  HOGDescriptor. We then fine tuned the parameter for HOG Descriptor by
+  optimizing the loss for all frames.  The window slides needs to be set for a
+  small one for the HOG Descriptor to gain a better result on finding people in
+  the given task.
+  </p>
+  <hr>
+  <h2> Conclussion </h2>
+  <p>
+  We first implemented our own version of getting the first/second moments and
+  circularity of objects. We implemented the sequential labeling and boundary
+  following algorithm. We applied these algorithms and methods to the given
+  four images.
+  </p>
+  <p>
+  For piano data set, the model we created is able to segment hands out of the
+  background with a low false positive rate and high recall.
+  </p>
+  <p>
+  For the bat data set, we found that adaptive thresholding works very well on
+  the chages of backgrounds. We detected most of bats except very small bats.
+  We also successfully detect whether it is folded with a appropriate threshold
+  on circularity, and regions where multiple bats exist.
+  </p>
+  <p>
+  For the person detector task, we used the HOG Descriptor and are able to
+  identify the majority of people given no occlusion. Occlusion may still
+  majorly affect the performance of the model even with our fine tuned
+  parameters.
+  </p>
+  <hr>
+  <h2> Credits </h2>
+  <ul>
+  <li>https://opencv-python-tutroals.readthedocs.io/en/latest/</li>
+  
+
+  </ul>
+</div>
+</body>
+</html>
